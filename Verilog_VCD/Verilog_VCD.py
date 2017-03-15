@@ -184,13 +184,13 @@ def calc_mult (statement, opt_timescale=''):
     else :
         timescale = tscale
         return 1
-    
+
 
     mult = 0
     units = 0
-    ts_match = re.compile(r"(\d+)([a-z]+)")
-    if ts_match.match(tscale):
-        mult  = ts_match.group(1)
+    ts_match = re.match(r"(\d+)([a-z]+)", tscale)
+    if ts_match:
+        mult  = int(ts_match.group(1))
         units = ts_match.group(2).lower()
     
     else :
@@ -206,7 +206,7 @@ def calc_mult (statement, opt_timescale=''):
         'ms' : 1e-03,
          's' : 1e-00,
     }
-    mults_keys = keys(mults)
+    mults_keys = mults.keys()
     mults_keys.sort(key=lambda x : mults[x])
     usage = '|'.join(mults_keys)
 
@@ -217,7 +217,7 @@ def calc_mult (statement, opt_timescale=''):
     else :
         croak("Error: Unsupported timescale units found in VCD file: "+units+".  ",
               "Supported values are: "+usage)
-    
+
 
     new_scale = 0
     if new_units in mults :
@@ -226,7 +226,7 @@ def calc_mult (statement, opt_timescale=''):
     else :
         croak("Error: Illegal user-supplied timescale: "+new_units+".  ",
               "Legal values are: "+usage)
-    
+
 
     return ((mult * scale) / new_scale)
 
@@ -481,6 +481,7 @@ def get_endtime() :
 #  - Sylvain Guilley : Fixed bugs in list_sigs.
 #  - Bogdan Tabacaru : Fix bugs in globalness of timescale and endtime
 #  - Andrew Becker : Fix bug in list_sigs
+#  - Pablo Madoery : Found bugs in siglist and opt_timescale features.
 # Thanks!
 # 
 # =head1 COPYRIGHT AND LICENSE
