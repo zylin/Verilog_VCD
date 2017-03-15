@@ -45,7 +45,7 @@ def parse_vcd(file, only_sigs=0, use_stdout=0, siglist=[], opt_timescale=''):
     time = 0
 
     re_time    = re.compile(r"^#(\d+)")
-    re_1b_val  = re.compile(r"^([01zx])(.+)")
+    re_1b_val  = re.compile(r"^([01zxZX])(.+)")
     re_Nb_val  = re.compile(r"^[br](\S+)\s+(.+)")
 
     fh = open(file, 'r')
@@ -130,7 +130,7 @@ def parse_vcd(file, only_sigs=0, use_stdout=0, siglist=[], opt_timescale=''):
             endtime = time
         
 
-        elif line.startswith(('0', '1', 'x', 'z', 'b', 'r')):
+        elif line.startswith(('0', '1', 'x', 'z', 'b', 'r', 'Z', 'X')):
             re_1b_val_match = re_1b_val.match(line)
             re_Nb_val_match = re_Nb_val.match(line)
             if re_Nb_val_match :
@@ -255,7 +255,7 @@ def get_endtime() :
 # While simulating logic circuits, the values of signals can be written out to
 # a Value Change Dump (VCD) file.  This module can be used to parse a VCD file
 # so that further analysis can be performed on the simulation data.  The entire
-# VCD file can be stored in a python data structure and manipulated using
+# VCD file can be stored in a Python data structure and manipulated using
 # standard hash and array operations.
 # 
 # =head2 Input File Syntax
