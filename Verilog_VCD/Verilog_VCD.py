@@ -18,9 +18,10 @@ def list_sigs(file) :
     vcd = parse_vcd(file, only_sigs=1)
 
     sigs = []
-    for k,v in vcd:
+    for k in vcd.keys():
+        v = vcd[k]
         nets = v['nets']
-        sigs.extend( n['hier']+n['name'] for n in net )
+        sigs.extend( n['hier']+n['name'] for n in nets )
     
     return sigs
 
@@ -469,6 +470,11 @@ def get_endtime() :
 # 
 # Originally written in Perl by Gene Sullivan (gsullivan@cpan.org)
 # Translated into Python by Sameer Gauria (sgauria+python@gmail.com)
+#
+# Plus the following patches :
+#  - Scott Chin : Handle upper-case values in VCD file.
+#  - Sylvain Guilley : Fixed bugs in list_sigs.
+# Thanks!
 # 
 # =head1 COPYRIGHT AND LICENSE
 # 
