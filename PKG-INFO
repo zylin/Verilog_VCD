@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: Verilog_VCD
-Version: 1.10
+Version: 1.11
 Summary: Module to Parse VCD (Value-Change-Dump) files
 Home-page: https://pypi.python.org/pypi/Verilog_VCD/
 Author: Sameer Gauria
@@ -12,6 +12,6 @@ Description: Verilog is a Hardware Description Language (HDL) used to model digi
         
         Originally written in Perl by Gene Sullivan (gsullivan@cpan.org) .
         Translated into Python by Sameer Gauria (sgauria+python@gmail.com) .
-        Patches submitted by Scott Chin, Sylvain Guilley, Bogdan Tabacaru, Andrew Becker.
+        Patches submitted by Scott Chin, Sylvain Guilley, Bogdan Tabacaru, Andrew Becker, and a substantial performance improvement by Matthew Clapp.
         
 Platform: UNKNOWN

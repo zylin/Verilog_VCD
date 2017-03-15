@@ -4,4 +4,4 @@ More details in the module file : Verilog_VCD.py .
 
 Originally written in Perl by Gene Sullivan (gsullivan@cpan.org) .
 Translated into Python by Sameer Gauria (sgauria+python@gmail.com) .
-Patches submitted by Scott Chin, Sylvain Guilley, Bogdan Tabacaru, Andrew Becker.
+Patches submitted by Scott Chin, Sylvain Guilley, Bogdan Tabacaru, Andrew Becker, and a substantial performance improvement by Matthew Clapp.
