@@ -258,6 +258,8 @@ def get_endtime() :
 # so that further analysis can be performed on the simulation data.  The entire
 # VCD file can be stored in a Python data structure and manipulated using
 # standard hash and array operations.
+#
+# This module is also a good helper for parsing fsdb files, since you can run fsd2vcd(part of the novas installation) to convert them to the vcd format and then use this module.
 # 
 # =head2 Input File Syntax
 # 
