@@ -111,7 +111,7 @@ def parse_vcd(file, only_sigs=0, use_stdout=0, siglist=[], opt_timescale=''):
             code = ls[3]
             name = "".join(ls[4:-1])
             path = '.'.join(hier)
-            full_name = path + name
+            full_name = path + '.' + name
             if (full_name in usigs) or all_sigs :
               if code not in data :
                 data[code] = {}
