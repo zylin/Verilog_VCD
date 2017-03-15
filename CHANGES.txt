@@ -1,3 +1,4 @@
 v1.0, 20121119 -- Initial release.
+v1.01, 20130206 -- Handle uppercase x,z : patch from Scott Chin.
 
 
