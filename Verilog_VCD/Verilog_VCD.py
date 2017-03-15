@@ -21,7 +21,7 @@ def list_sigs(file) :
     for k in vcd.keys():
         v = vcd[k]
         nets = v['nets']
-        sigs.extend( n['hier']+n['name'] for n in nets )
+        sigs.extend( n['hier']+'.'+n['name'] for n in nets )
     
     return sigs
 
@@ -480,6 +480,7 @@ def get_endtime() :
 #  - Scott Chin : Handle upper-case values in VCD file.
 #  - Sylvain Guilley : Fixed bugs in list_sigs.
 #  - Bogdan Tabacaru : Fix bugs in globalness of timescale and endtime
+#  - Andrew Becker : Fix bug in list_sigs
 # Thanks!
 # 
 # =head1 COPYRIGHT AND LICENSE
