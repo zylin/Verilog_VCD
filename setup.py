@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='Verilog_VCD',
-    version='1.04',
+    version='1.05',
     author='Sameer Gauria',
     author_email='sgauria+python@gmail.com',
     packages=['Verilog_VCD'],
