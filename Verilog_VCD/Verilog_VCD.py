@@ -6,12 +6,13 @@ import re
 global timescale
 global endtime
 
-def croak(*args):
-  """Function similar to Perl's Carp::croak, to simplify porting this code"""
-  a = "".join(args);
-  raise Exception(a)
 
-def list_sigs(file) :
+# our local exception for VCD parsing errors (inherited from Exception)
+class VCDParseError(Exception):
+    pass
+
+
+def list_sigs(file):
     """Parse input VCD file into data structure, 
     then return just a list of the signal names."""
 
@@ -38,7 +39,7 @@ def parse_vcd(file, only_sigs=0, use_stdout=0, siglist=[], opt_timescale=''):
 
     if len(usigs):
         all_sigs = 0
-    else :
+    else:
         all_sigs = 1
 
     data = {}
@@ -47,112 +48,112 @@ def parse_vcd(file, only_sigs=0, use_stdout=0, siglist=[], opt_timescale=''):
     hier = []
     time = 0
 
-    re_time    = re.compile(r"^#(\d+)")
-    re_1b_val  = re.compile(r"^([01zxZX])(.+)")
-    re_Nb_val  = re.compile(r"^[br](\S+)\s+(.+)")
-
-    fh = open(file, 'r')
-    while True:
-        line = fh.readline()
-        if line == '' : # EOF
-          break
-
-        # chomp
-        # s/ ^ \s+ //x
-        line = line.strip()
-
-        if "$enddefinitions" in line:
-            num_sigs = len(data)
-            if (num_sigs == 0) :
-                if (all_sigs) :
-                    croak("Error: No signals were found in the VCD file file.",
-                          'Check the VCD file for proper var syntax.')
-                
-                else :
-                    croak("Error: No matching signals were found in the VCD file file.",
-                          ' Use list_sigs to view all signals in the VCD file.')
-                
-            
-            if ((num_sigs>1) and use_stdout) :
-                croak("Error: There are too many signals (num_sigs) for output ",
-                      'to STDOUT.  Use list_sigs to select a single signal.')
-            
-            if only_sigs:
+    with open(file, 'r') as fh:
+        while True:
+            line = fh.readline()
+            if line == '': # EOF
                 break
 
+            # chomp
+            # s/ ^ \s+ //x
+            line = line.strip()
 
-        elif "$timescale" in line:
-            statement = line
-            if not "$end" in line:
-                while fh :
-                    line = fh.readline()
-                    statement += line
-                    if "$end" in line:
-                      break
-            
-            mult = calc_mult(statement, opt_timescale)
-        
+            # if nothing left after we strip whitespace, go to next line
+            if line == '':
+                continue
 
-        elif "$scope" in line:
-            # assumes all on one line
-            #   $scope module dff end
-            hier.append( line.split()[2] ) # just keep scope name
+            # put most frequent lines encountered at start of if/elif, so other
+            #   clauses usually don't need to be tested 
+            if line[0] in ('b', 'B', 'r', 'R'):
+                (value,code) = line[1:].split()
+                if (code in data):
+                    if (use_stdout):
+                        print( time, value )
+                    else:
+                        if 'tv' not in data[code]:
+                            data[code]['tv'] = []
+                        data[code]['tv'].append( (time, value) )
         
-        elif "$upscope" in line:
-            hier.pop()
+            elif line[0] in ('0', '1', 'x', 'X', 'z', 'Z'):
+                value = line[0]
+                code = line[1:]
+                if (code in data):
+                    if (use_stdout):
+                        print( time, value )
+                    else:
+                        if 'tv' not in data[code]:
+                            data[code]['tv'] = []
+                        data[code]['tv'].append( (time, value) )
         
-        elif "$var" in line:
-            # assumes all on one line:
-            #   $var reg 1 *@ data $end
-            #   $var wire 4 ) addr [3:0] $end
-            ls = line.split()
-            type = ls[1]
-            size = ls[2]
-            code = ls[3]
-            name = "".join(ls[4:-1])
-            path = '.'.join(hier)
-            full_name = path + '.' + name
-            if (full_name in usigs) or all_sigs :
-              if code not in data :
-                data[code] = {}
-              if 'nets' not in data[code]:
-                data[code]['nets'] = []
-              var_struct = {
-                  'type' : type,
-                  'name' : name,
-                  'size' : size,
-                  'hier' : path,
-               } 
-              if var_struct not in data[code]['nets']:
-                data[code]['nets'].append( var_struct )
-        
+            elif line[0]=='#':
+                time = mult * int(line[1:])
+                endtime = time
 
-        elif line.startswith('#'):
-            re_time_match   = re_time.match(line)
-            time = mult * int(re_time_match.group(1))
-            endtime = time
-        
-
-        elif line.startswith(('0', '1', 'x', 'z', 'b', 'r', 'Z', 'X')):
-            re_1b_val_match = re_1b_val.match(line)
-            re_Nb_val_match = re_Nb_val.match(line)
-            if re_Nb_val_match :
-              value = re_Nb_val_match.group(1)
-              code  = re_Nb_val_match.group(2)
-            elif re_1b_val_match :
-              value = re_1b_val_match.group(1)
-              code  = re_1b_val_match.group(2)
-            if (code in data) :
-                if (use_stdout) :
-                    print time, value
-                else :
-                    if 'tv' not in data[code]:
-                      data[code]['tv'] = []
-                    data[code]['tv'].append( (time, value) )
+            elif "$enddefinitions" in line:
+                num_sigs = len(data)
+                if (num_sigs == 0):
+                    if (all_sigs):
+                        VCDParseError("Error: No signals were found in the "\
+                                "VCD file "+file+". Check the VCD file for "\
+                                "proper var syntax.")
+                    
+                    else:
+                        VCDParseError("Error: No matching signals were found "\
+                                "in the VCD file "+file+". Use list_sigs to "\
+                                "view all signals in the VCD file.")
                 
+                if ((num_sigs>1) and use_stdout):
+                    VCDParseError("Error: There are too many signals "\
+                            "(num_sigs) for output to STDOUT.  Use list_sigs "\
+                            "to select a single signal.")
+                
+                if only_sigs:
+                    break
+
+            elif "$timescale" in line:
+                statement = line
+                if not "$end" in line:
+                    while fh:
+                        line = fh.readline()
+                        statement += line
+                        if "$end" in line:
+                            break
+                
+                mult = calc_mult(statement, opt_timescale)
+
+            elif "$scope" in line:
+                # assumes all on one line
+                #   $scope module dff end
+                hier.append( line.split()[2] ) # just keep scope name
             
-        
-    
+            elif "$upscope" in line:
+                hier.pop()
+            
+            elif "$var" in line:
+                # assumes all on one line:
+                #   $var reg 1 *@ data $end
+                #   $var wire 4 ) addr [3:0] $end
+                ls = line.split()
+                type = ls[1]
+                size = ls[2]
+                code = ls[3]
+                name = "".join(ls[4:-1])
+                path = '.'.join(hier)
+                full_name = path + '.' + name
+                if (full_name in usigs) or all_sigs:
+                  if code not in data:
+                      data[code] = {}
+                  if 'nets' not in data[code]:
+                      data[code]['nets'] = []
+                  var_struct = {
+                      'type' : type,
+                      'name' : name,
+                      'size' : size,
+                      'hier' : path,
+                   } 
+                  if var_struct not in data[code]['nets']:
+                      data[code]['nets'].append( var_struct )
+
     fh.close()
 
     return data
@@ -181,7 +182,7 @@ def calc_mult (statement, opt_timescale=''):
         new_units = re.sub(r"\s", '', new_units)
         timescale = "1"+new_units
     
-    else :
+    else:
         timescale = tscale
         return 1
 
@@ -193,9 +194,9 @@ def calc_mult (statement, opt_timescale=''):
         mult  = int(ts_match.group(1))
         units = ts_match.group(2).lower()
     
-    else :
-        croak("Error: Unsupported timescale found in VCD file: tscale.  ",
-              'Refer to the Verilog LRM.')
+    else:
+        VCDParseError("Error: Unsupported timescale found in VCD "\
+                "file: "+tscale+".  Refer to the Verilog LRM.")
     
 
     mults = {
@@ -211,31 +212,31 @@ def calc_mult (statement, opt_timescale=''):
     usage = '|'.join(mults_keys)
 
     scale = 0
-    if units in mults :
+    if units in mults:
         scale = mults[units]
     
-    else :
-        croak("Error: Unsupported timescale units found in VCD file: "+units+".  ",
-              "Supported values are: "+usage)
+    else:
+        VCDParseError("Error: Unsupported timescale units found in VCD "\
+                "file: "+units+".  Supported values are: "+usage)
 
 
     new_scale = 0
-    if new_units in mults :
+    if new_units in mults:
         new_scale = mults[new_units]
     
-    else :
-        croak("Error: Illegal user-supplied timescale: "+new_units+".  ",
-              "Legal values are: "+usage)
+    else:
+        VCDParseError("Error: Illegal user-supplied "\
+                "timescale: "+new_units+".  Legal values are: "+usage)
 
 
     return ((mult * scale) / new_scale)
 
 
-def get_timescale() :
+def get_timescale():
     return timescale
 
 
-def get_endtime() :
+def get_endtime():
     return endtime
 
 
@@ -246,7 +247,7 @@ def get_endtime() :
 # 
 # =head1 VERSION
 # 
-# This document refers to Verilog::VCD version 0.03.
+# This document refers to Verilog::VCD version 1.10.
 # 
 # =head1 SYNOPSIS
 # 
@@ -482,6 +483,7 @@ def get_endtime() :
 #  - Bogdan Tabacaru : Fix bugs in globalness of timescale and endtime
 #  - Andrew Becker : Fix bug in list_sigs
 #  - Pablo Madoery : Found bugs in siglist and opt_timescale features.
+#  - Matthew Clapp itsayellow+dev@gmail.com : Performance speedup, Exception, print, open, etc cleanup to make the code more robust.
 # Thanks!
 # 
 # =head1 COPYRIGHT AND LICENSE

@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: Verilog_VCD
-Version: 1.09
+Version: 1.10
 Summary: Module to Parse VCD (Value-Change-Dump) files
 Home-page: https://pypi.python.org/pypi/Verilog_VCD/
 Author: Sameer Gauria
