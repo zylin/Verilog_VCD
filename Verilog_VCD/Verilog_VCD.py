@@ -30,6 +30,8 @@ def parse_vcd(file, only_sigs=0, use_stdout=0, siglist=[], opt_timescale=''):
     """Parse input VCD file into data structure.
     Also, print t-v pairs to STDOUT, if requested."""
 
+    global endtime
+
     usigs = {}
     for i in siglist:
         usigs[i] = 1
@@ -166,6 +168,7 @@ def calc_mult (statement, opt_timescale=''):
     Also sets the package timescale variable.
     """ 
 
+    global timescale
 
     fields = statement.split()
     fields.pop()   # delete end from array
@@ -476,6 +479,7 @@ def get_endtime() :
 # Plus the following patches :
 #  - Scott Chin : Handle upper-case values in VCD file.
 #  - Sylvain Guilley : Fixed bugs in list_sigs.
+#  - Bogdan Tabacaru : Fix bugs in globalness of timescale and endtime
 # Thanks!
 # 
 # =head1 COPYRIGHT AND LICENSE
